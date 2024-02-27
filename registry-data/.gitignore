@@ -1,0 +1,4 @@
+# file: registry-data/.gitignore
+*
+
+!.gitignore

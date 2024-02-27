@@ -1,0 +1,86 @@
+# file: app/docker-compose.yml
+
+services:
+
+#
+# Local registry
+#
+  registry:
+    image: registry:2.8.3
+    hostname: registry
+    container_name: registry
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./registry-data:/var/lib/registry
+    restart: always
+    networks:
+      - infra-net
+
+#
+# Kubernetes
+#
+  k8s:
+    image: registry:5000/kindest/node:v1.29.2
+    hostname: k8s
+    container_name: k8s
+    environment:
+      - KUBECONFIG=/path/to/kubeconfig.yaml
+    #volumes:
+    #  - /path/to/host/kubeconfig.yaml:/path/to/kubeconfig.yaml
+    #  - /path/to/terraform:/app
+    #  - ./k8s-data:/path/to/k8s/data
+    depends_on:
+      - registry
+    restart: always
+    networks:
+      - infra-net
+
+#
+# Terraform
+#
+  trfrm:
+    image: registry:5000/hashicorp/terraform:1.7.4
+    hostname: trfrm
+    container_name: trfrm
+    environment:
+      - AWS_ACCESS_KEY_ID=your_access_key
+      - AWS_SECRET_ACCESS_KEY=your_secret_key
+    # - ./terraform_data:/path/to/terraform/data
+    # - TF_VAR_region=us-east-1
+    restart: always
+    depends_on:
+      - registry
+    networks:
+      - infra-net
+
+
+#
+# Helm
+#
+  helm:
+    image: registry:5000/alpine/helm:3.14.2
+    hostname: helm
+    container_name: helm
+    environment:
+      - KUBECONFIG=/path/to/kubeconfig.yaml
+      #- HELM_HOME=/path/to/helm/home
+    #volumes:
+      #- /path/to/host/kubeconfig.yaml:/path/to/kubeconfig.yml
+      #- helm_data:/path/to/helm/data
+    depends_on:
+      - registry
+    restart: always
+    networks:
+      - infra-net
+
+networks:
+  infra-net:
+    name: infra-net
+    driver: bridge
+
+volumes:
+  registry-data:
+    name: registry-data
+#  terraform_data: {}
+#  helm_data: {}

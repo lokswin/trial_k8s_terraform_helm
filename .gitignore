@@ -1,0 +1,10 @@
+# trial_k8s_terraform_helm root-level .gitignore
+env
+.env
+/registry-data/
+
+# Ignore other temporary or cache files
+*.bak
+*.tmp
+*.swp
+.DS_Store
